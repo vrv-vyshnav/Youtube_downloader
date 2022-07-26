@@ -4,21 +4,26 @@ requirements:
         pip install pytube
 
 """
+# https://www.youtube.com/watch?v=KWOZHbDdOeo
 
-
+from typing import List
 from pytube import YouTube, Playlist
 import os
+
+download_directory = os.path.join(os.getcwd(), "Downloads")
+os.makedirs(download_directory, exist_ok=True)
 
 
 def stream_list(video):
     print(video.title)
-    # for streams in video.stream:
-    #     print(streams)
+    list_of_streams = video.streams
+    for stream in video.streams.all():
+        print(stream)
 
-def test():
-    url = input("\n  Enter the url of the video : ")
-    Youtube_video = YouTube(url)
-    stream_list(Youtube_video)
+    stream_number = int(input("\n Enter the iTAG of the stream you want to download : "))
+    return  stream_number
+    
+
 
 def download_with_url():
     try:
@@ -27,17 +32,18 @@ def download_with_url():
             Youtube_video = YouTube(url)
         except:
             print("connection failed")
-            
-        resolution = Youtube_video.streams.get_highest_resolution()
-        print("\n \t ",Youtube_video.title," is Downloading \n")
-        resolution.download()
-        print(Youtube_video.title," has downloaded successfully \n ")
-        
+
+        stream_tag = stream_list(Youtube_video)
+        print("\n \t ", Youtube_video.title, " is Downloading \n")
+        stream_number = Youtube_video.streams.get_by_itag('137')
+        # resolution = Youtube_video.streams.get_highest_resolution()
+        stream_number.download(download_directory)
+        print(" ",Youtube_video.title," has downloaded successfully \n ")
+
     except Exception as e:
         print(e)
         print("\n could not download the video")
         print(" check the url and try again \n")
-        
 
 
 def download_full_playlist():
@@ -47,15 +53,14 @@ def download_full_playlist():
             playlist = Playlist(url)
         except:
             print("connection failed")
-        
+
         print('Number of videos in playlist: %s' % len(playlist.video_urls))
-        print("\n \t video is Downloading \n")
         for video in playlist:
             print(video)
             Youtube_video = YouTube(video)
             resolution = Youtube_video.streams.get_highest_resolution()
             print("\n \tDownloading \n", Youtube_video.title)
-            resolution.download()
+            resolution.download(download_directory)
             print(Youtube_video.title, " downloaded")
         print("Playlist downloaded successfully \n ")
     except:
@@ -70,18 +75,18 @@ def download_audio_only():
             YouTube_video = YouTube(url)
         except:
             print("connection failed")
-            
+
         print("\n \t video is Downloading \n")
         video = YouTube_video.streams.filter(only_audio=True).first()
-        out_file = video.download()
-        base, ext = os.path.splitext(out_file)
+        out_file = video.download(download_directory)
+        base = os.path.splitext(out_file)
         print("\n \t converting to audio \n")
         new_file = base + '.mp3'
         os.rename(out_file, new_file)
         print("\n \t downlaod successfully \n")
 
     except:
-        pass
+        print(" check the url and try again \n")
 
 
 def download_video_only():
@@ -103,8 +108,8 @@ def download_video_only():
 # -----------------------------------------------------------------
 
 
-print(" \n \t \t Youtube Downloader \n")
-print(" \t\t-----------------------\n")
+print(" \n \t  Youtube Downloader \n")
+print(" \t-----------------------\n")
 print("\n \t 1. Download video \n")
 print("\t 2. Download full playlist \n")
 print("\t 3. Download audio only \n")
